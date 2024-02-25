@@ -11,7 +11,7 @@ add_executable(program sumTot.c)
 #set(CMAKE_BUILD_TYPE Debug)
 
 add_custom_target(run
-        COMMAND program 0 100
+        COMMAND program 0 1000
         DEPENDS program
         WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
