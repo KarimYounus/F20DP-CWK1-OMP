@@ -6,10 +6,15 @@
 #include <stdio.h>
 #include <omp.h>
 
+/*
+ * Inspired by the TotientRange sequential implementation from the F20DP Gitlab
+ * [source]: https://gitlab-student.macs.hw.ac.uk/f20dp/f20dp-totient-range/-/blob/master/TotientRange.c
+*/
+
 long gcdEuclid(unsigned long a, unsigned long b) {
     /*
     - Function to calculate the greatest common divisor (GCD) of two numbers.
-    The Euclidean algorithm as implemented in the serial version of the algorithm provided in the F20DP Gitlab:
+    The Euclidean algorithm as implemented in the sequential version of the algorithm provided in the F20DP Gitlab:
     [source]: https://gitlab-student.macs.hw.ac.uk/f20dp/f20dp-totient-range/-/blob/master/TotientRange.c
      */
     while (b != 0) {
@@ -72,23 +77,33 @@ long sumTotients(unsigned long lower, unsigned long upper) {
 
     // This function represents the outermost loop of the program, thus we employ loop parallelization here.
     // We use the sum clause to ensure that the sum variable is handled correctly by OpenMP to avoid any race conditions
-    #pragma omp parallel for reduction(+:sum)
-    for (n = lower; n <= upper; n++)
-        sum = sum + euler(n);
+    #pragma omp parallel private(n) shared(sum)
+    {
+        // Print the number of threads only once by checking if the current thread is the master thread
+        if (omp_get_thread_num() == 0) {
+            printf("Parallel Threads = %d\n", omp_get_num_threads());
+        }
+        #pragma omp for reduction(+:sum)
+        for (n = lower; n <= upper; n++)
+            sum = sum + euler(n);
+    }
     return sum;
 }
 
 int main(int argc, char ** argv) {
     unsigned long lower, upper;
-
+    unsigned long result;
     if (argc != 3) {
         printf("Error: 2 Arguments Required");
         return 0;
     }
+
     sscanf(argv[1], "%ld", &lower);
     sscanf(argv[2], "%ld", &upper);
-    unsigned long result = sumTotients(lower, upper);
 
+
+//    printf("Parallel Threads = %d, Main Thread = %d\n", omp_get_num_threads(), 1);
+    result = sumTotients(lower, upper);
     printf("Lower=%ld, Upper=%ld, Result=%ld\n", lower, upper, result);
 
     return 1;
