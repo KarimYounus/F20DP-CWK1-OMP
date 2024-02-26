@@ -2,16 +2,20 @@
 // Created by Karim Younus
 // F20DP CWK1
 // C & OpenMP Sum Totients Implementation
+//
 
 #include <stdio.h>
 #include <omp.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 /*
  * Inspired by the TotientRange sequential implementation from the F20DP Gitlab
  * [source]: https://gitlab-student.macs.hw.ac.uk/f20dp/f20dp-totient-range/-/blob/master/TotientRange.c
 */
+
+bool SEQ, BIN_GCD = false;  // Global bools for sequential execution and binary gcd calculation
 
 long gcdEuclid(unsigned long a, unsigned long b) {
     /*
@@ -54,8 +58,10 @@ long gcdBinary(unsigned long a, unsigned long b) {
 }
 
 int relPrime(unsigned long a, unsigned long b) {
-    // Function to determine if 2 numbers are relatively prime
-    return gcdBinary(a, b) == 1;
+    // Function to determine if 2 numbers are relatively prime, using either the Euclidean or the binary algorithm to
+    // find the GCD
+    if (BIN_GCD) return gcdBinary(a, b) == 1;
+    return gcdEuclid(a, b) == 1;
 }
 
 long euler(unsigned long n) {
@@ -119,6 +125,8 @@ long sumTotientsSequential(unsigned long lower, unsigned long upper) {
 }
 
 omp_sched_t determine_sched(char* sched_type) {
+    // Function to set the OpenMP scheduling strategy from the programs arguments
+
     if (strcmp(sched_type, "static") == 0) {
         return omp_sched_static;
     } else if (strcmp(sched_type, "dynamic") == 0) {
@@ -134,6 +142,8 @@ omp_sched_t determine_sched(char* sched_type) {
 }
 
 void assert_sched() {
+    // Function to check the current scheduling strategy being employed by OpenMP
+
     omp_sched_t current_sched;
     int current_chunk_s;
 
@@ -158,24 +168,53 @@ void assert_sched() {
     printf("Scheduling strategy = %s, Chunk size = %d\n", sched_str, current_chunk_s);
 }
 
+/*
+ * ==================================================================================
+ * MAIN
+ * ==================================================================================
+ */
+
 int main(int argc, char ** argv) {
     unsigned long lower, upper; // Bounds of function
-    int num_t, chunk_s; // Thread count and scheduling chunk size
+    int num_t, chunk_s = 1; // Thread count and scheduling chunk size - Default to 1
     omp_sched_t kind = omp_sched_static; // Scheduling strategy - Default to static
     unsigned long result; // Result of sum
 
-    //Check argument count
-    if (argc != 6) {
-        printf("Error: 5 Arguments Required - Lower, Upper, Num of Threads, Scheduling Strategy, Chunk Size");
-        return 1;
+    // Parse arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--seq") == 0) {    // Sequential?
+            SEQ = true;
+            continue;
+        }
+        if (strcmp(argv[i], "--binary") == 0) {  // Binary GCD?
+            BIN_GCD = true;
+            continue;
+        }
+        if (i == 1) {    // Lower bound
+            lower = strtoul(argv[i], NULL, 10);
+        } else if (i == 2) {    // Upper bound
+            upper = strtoul(argv[i], NULL, 10);
+        } else if (i == 3) {    // Num of threads
+            num_t = atoi(argv[i]);
+        } else if (i == 4) {    // Scheduling strategy
+            kind = determine_sched(argv[i]);
+        } else if (i == 5) {    // Chunk size
+            chunk_s = atoi(argv[i]);
+        }
     }
 
-    // Get arguments
-    lower = strtoul(argv[1], NULL, 10);
-    upper = strtoul(argv[2], NULL, 10);
-    num_t = atoi(argv[3]);
-    kind = determine_sched(argv[4]); // Determine the scheduling strategy from the command line argument
-    chunk_s = atoi(argv[5]);
+    // If seq, run the sequential version of the algorithm
+    if (SEQ) {
+        printf("Running Sequentially . . .\n");
+        result = sumTotientsSequential(lower, upper);
+        printf("RESULTS =======================\n");
+        printf("Lower=%ld, Upper=%ld, Result=%ld\n", lower, upper, result);
+        return 0;
+    }
+
+    if (BIN_GCD) printf("Using Binary GCD Calculation\n");
+    else printf("Using Euclidean GCD Calculation\n");
+    printf("Running in Parallel . . .\n");
 
     // Set number of threads and scheduling strategy as defined in the arguments
     omp_set_num_threads(num_t);
@@ -186,6 +225,7 @@ int main(int argc, char ** argv) {
 
     // Run calculation
     result = sumTotientsParallel(lower, upper);
+    printf("RESULTS =======================\n");
     printf("Lower=%ld, Upper=%ld, Result=%ld\n", lower, upper, result);
 
     return 0;
