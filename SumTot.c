@@ -23,6 +23,7 @@ long gcdEuclid(unsigned long a, unsigned long b) {
     The Euclidean algorithm as implemented in the sequential version of the algorithm provided in the F20DP Gitlab:
     [source]: https://gitlab-student.macs.hw.ac.uk/f20dp/f20dp-totient-range/-/blob/master/TotientRange.c
      */
+
     while (b != 0) {
         int t = b;
         b = a % b;
@@ -39,6 +40,7 @@ long gcdBinary(unsigned long a, unsigned long b) {
     [source - S Pigeon]: https://hbfs.wordpress.com/2013/12/10/the-speed-of-gcd/
     [source - D Lemire]: https://lemire.me/blog/2013/12/26/fastest-way-to-compute-the-greatest-common-divisor/
     */
+
     if (a == 0) return b;
     if (b == 0) return a;
 
@@ -83,8 +85,6 @@ long sumTotientsParallel(unsigned long lower, unsigned long upper) {
     unsigned sum = 0;
     unsigned n;
 
-    double start_time = omp_get_wtime(); // Start timing
-
     // This represents the outermost loop of the program, thus we employ parallelization here.
     #pragma omp parallel private(n) shared(sum)
     {
@@ -98,9 +98,6 @@ long sumTotientsParallel(unsigned long lower, unsigned long upper) {
             sum = sum + euler(n);
     }
 
-    double end_time = omp_get_wtime(); // End timing
-    printf("Execution Time = %f seconds\n", end_time - start_time);
-
     return sum;
 }
 
@@ -110,16 +107,12 @@ long sumTotientsSequential(unsigned long lower, unsigned long upper) {
     unsigned sum = 0;
     unsigned n;
 
-    double start_time = omp_get_wtime(); // Start timing
-        // Print the number of threads only once by checking if the current thread is the master thread
-        if (omp_get_thread_num() == 0) {
-            printf("Parallel Threads = %d\n", omp_get_num_threads());
-        }
-        for (n = lower; n <= upper; n++)
-            sum = sum + euler(n);
-
-    double end_time = omp_get_wtime(); // End timing
-    printf("Execution Time = %f seconds\n", end_time - start_time);
+    // Print the number of threads
+    if (omp_get_thread_num() == 0) {
+        printf("Parallel Threads = %d\n", omp_get_num_threads());
+    }
+    for (n = lower; n <= upper; n++)
+        sum = sum + euler(n);
 
     return sum;
 }
@@ -164,8 +157,38 @@ void assert_sched() {
         case omp_sched_auto:
             sched_str = "auto";
             break;
+        case omp_sched_monotonic:
+            sched_str = "monotonic";
+            break;
     }
     printf("Scheduling strategy = %s, Chunk size = %d\n", sched_str, current_chunk_s);
+}
+
+void output_metrics(const char* filename, long lower, long upper, double exec_t, int n_cores, const char* gcd, const char* sched_t, int chunk_s) {
+    FILE *fp;
+
+    // Open the file. If the file does not exist, it will be created.
+    fp = fopen(filename, "a");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    // Check if file is empty to write header
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    if (size == 0) {
+        fprintf(fp, "\"Filename\", \"Lower\', \"Upper\",\"Execution Time\", \"Core Count\", \"GCD Version\", \"Scheduling Strategy\", \"Chunk Size\"\n");
+    }
+
+    // Move back to the end of the file to append data
+    fseek(fp, 0, SEEK_END);
+
+    // Write the metrics to the file in CSV format
+    fprintf(fp, "\"%s\", %ld, %ld, %f, %d, \"%s\", \"%s\", %d\n", filename, lower, upper, exec_t, n_cores, gcd, sched_t, chunk_s);
+
+    // Close the file
+    fclose(fp);
 }
 
 /*
@@ -177,8 +200,12 @@ void assert_sched() {
 int main(int argc, char ** argv) {
     unsigned long lower, upper; // Bounds of function
     int num_t, chunk_s = 1; // Thread count and scheduling chunk size - Default to 1
-    omp_sched_t kind = omp_sched_static; // Scheduling strategy - Default to static
+    omp_sched_t sched = omp_sched_static; // Scheduling strategy - Default to static
     unsigned long result; // Result of sum
+    char *filename = NULL; // Filename - Default to null
+    char *gcd_str = "Euclid"; // GCD Function String - Default to Euclid
+    char *sched_str = "static"; // Scheduling startegy string - Default to static
+
 
     // Parse arguments
     for (int i = 1; i < argc; i++) {
@@ -190,6 +217,10 @@ int main(int argc, char ** argv) {
             BIN_GCD = true;
             continue;
         }
+        if (strcmp(argv[i], "--filename") == 0 && i + 1 < argc) {   // Filename? - check to ensure there is at least one more arg after the flag
+            filename = argv[++i]; // Use the next arg as the filename
+            continue;
+        }
         if (i == 1) {    // Lower bound
             lower = strtoul(argv[i], NULL, 10);
         } else if (i == 2) {    // Upper bound
@@ -197,37 +228,44 @@ int main(int argc, char ** argv) {
         } else if (i == 3) {    // Num of threads
             num_t = atoi(argv[i]);
         } else if (i == 4) {    // Scheduling strategy
-            kind = determine_sched(argv[i]);
+            sched = determine_sched(argv[i]);
+            sched_str = argv[i];
         } else if (i == 5) {    // Chunk size
             chunk_s = atoi(argv[i]);
         }
     }
 
-    if (BIN_GCD) printf("Using Binary GCD Calculation\n");
-    else printf("Using Euclidean GCD Calculation\n");
-
-    // If seq, run the sequential version of the algorithm
+    // If --seq flag is used, run the sequential version of the algorithm
     if (SEQ) {
         printf("Running Sequentially . . .\n");
         result = sumTotientsSequential(lower, upper);
-        printf("RESULTS =======================\n");
-        printf("Lower=%ld, Upper=%ld, Result=%ld\n", lower, upper, result);
-        return 0;
     }
+    else printf("Running in Parallel . . .\n");
 
-    printf("Running in Parallel . . .\n");
+    if (BIN_GCD) {
+        printf("Using Binary GCD Calculation\n");
+        gcd_str = "Binary";
+    }
+    else printf("Using Euclidean GCD Calculation\n");
 
     // Set number of threads and scheduling strategy as defined in the arguments
     omp_set_num_threads(num_t);
-    omp_set_schedule(kind, chunk_s);
+    omp_set_schedule(sched, chunk_s);
 
     // Check Scheduling
     assert_sched();
 
-    // Run calculation
-    result = sumTotientsParallel(lower, upper);
-    printf("RESULTS =======================\n");
+    double start_time = omp_get_wtime(); // Start timing
+    result = sumTotientsParallel(lower, upper); // Run calculation
+    double end_time = omp_get_wtime(); //Stop timing
+    double exec_t = end_time - start_time;
+
+    // Parse Metrics
+    printf("\nRESULTS =======================\n");
+    printf("Execution Time = %f seconds\n", exec_t);
     printf("Lower=%ld, Upper=%ld, Result=%ld\n", lower, upper, result);
 
+    //TODO: Mind the compiler dependent type conversion below for lower and upper
+    output_metrics(filename, lower, upper, exec_t, num_t, gcd_str, sched_str, chunk_s);
     return 0;
 }
