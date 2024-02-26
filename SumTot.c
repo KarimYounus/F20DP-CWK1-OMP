@@ -203,6 +203,9 @@ int main(int argc, char ** argv) {
         }
     }
 
+    if (BIN_GCD) printf("Using Binary GCD Calculation\n");
+    else printf("Using Euclidean GCD Calculation\n");
+
     // If seq, run the sequential version of the algorithm
     if (SEQ) {
         printf("Running Sequentially . . .\n");
@@ -212,8 +215,6 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
-    if (BIN_GCD) printf("Using Binary GCD Calculation\n");
-    else printf("Using Euclidean GCD Calculation\n");
     printf("Running in Parallel . . .\n");
 
     // Set number of threads and scheduling strategy as defined in the arguments

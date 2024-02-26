@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.17.3)
 project(F20DP_CWK1_OMP C)
-set(CMAKE_C_STANDARD 17)
 
 add_library(F20DP_CWK1_OMP STATIC
         SumTot.c)
