@@ -237,10 +237,10 @@ int main(int argc, char ** argv) {
 
     // If --seq flag is used, run the sequential version of the algorithm
     if (SEQ) {
-        printf("Running Sequentially . . .\n");
+        printf("\nRunning Sequentially . . .\n");
         result = sumTotientsSequential(lower, upper);
     }
-    else printf("Running in Parallel . . .\n");
+    else printf("\nRunning in Parallel . . .\n");
 
     if (BIN_GCD) {
         printf("Using Binary GCD Calculation\n");
