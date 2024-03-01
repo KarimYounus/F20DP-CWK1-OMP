@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=seq_benchmark
-#SBATCH --partition=amd-longq
+#SBATCH --partition=intel-longq
 #SBATCH --output=seq_benchmark_%A_%a.out
-#SBATCH --array=1-2
 #SBATCH --ntasks=1
 
 # Define the ranges
-declare -A datasets=( [1]=15000 [2]=30000 [3]=100000 )
+DATASETS=(15000 13000 100000)
+ITERATIONS=5
 
 # Sequential Flag
 gcd_version="--seq"
@@ -17,7 +17,9 @@ if [ "${SLURM_ARRAY_TASK_ID}" -eq 2 ]; then
 fi
 
 # Loop through each dataset
-for ds in "${!datasets[@]}"
-do
-    srun -c1 ./program 1 "${datasets[$ds]}" 1 static 1 $gcd_version --filename seq_metrics_ds"${ds}"_gcd"${SLURM_ARRAY_TASK_ID}".csv
+for ds in "${!DATASETS[@]}"; do
+  for ITER in $(seq 1 $ITERATIONS); do
+    srun -c1 ./program 1 "${DATASETS[$ds]}" 1 static 1 $gcd_version --seq --filename intel_seq_metrics_ds"${ds}".csv
+  done
 done
+
