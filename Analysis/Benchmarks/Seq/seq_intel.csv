@@ -1,0 +1,17 @@
+"Filename", "Lower', "Upper","Execution Time", "Core Count", "GCD Version", "Scheduling Strategy", "Chunk Size"
+"intel_seq_metrics.csv", 1, 15000, 12.302768, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 12.295488, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 12.294606, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 12.302298, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 11.375721, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 11.384246, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 11.384219, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 15000, 11.381935, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 52.495610, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 52.209258, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 52.228694, 1, "Euclid", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 48.647544, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 48.914769, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 30000, 48.639440, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 100000, 600.528281, 1, "Binary", "static", 1
+"intel_seq_metrics.csv", 1, 100000, 638.453457, 1, "Euclid", "static", 1

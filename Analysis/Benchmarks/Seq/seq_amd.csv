@@ -1,0 +1,21 @@
+"Filename", "Lower', "Upper","Execution Time", "Core Count", "GCD Version", "Scheduling Strategy", "Chunk Size"
+"amd_seq_metrics.csv", 1, 15000, 12.059020, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 12.054638, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 12.075558, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 12.058255, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 19.830550, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 19.742183, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 19.638347, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 15000, 17.048578, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 75.983547, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 83.347979, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 69.633335, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 41.976100, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 49.635218, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 30000, 44.528295, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 526.649638, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 525.082931, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 523.862413, 1, "Euclid", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 889.470309, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 891.740126, 1, "Binary", "static", 1
+"amd_seq_metrics.csv", 1, 100000, 888.105201, 1, "Binary", "static", 1
